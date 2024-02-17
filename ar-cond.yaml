@@ -1,0 +1,515 @@
+substitutions:
+  name: "leofig-ar-cond"
+  friendly_name: "Ar Condicionado"
+  room: ""
+  device_description: "leofig ar condicionado"
+  project_name: "Leo Fig.Ar Condicionado"
+  project_version: "1.0"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: true
+  project:
+    name: "${project_name}"
+    version: "${project_version}"
+
+esp8266:
+  board: esp01_1m
+
+api:
+
+ota:
+
+logger:
+  baud_rate: 0
+
+mdns:
+  disabled: false
+
+web_server:
+  port: 80
+
+wifi:
+  ap: {} # Isso cria um AP com o nome do dispositivo e sem senha.
+
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://leofig-rj/leofig-configs/ar-cond.yaml
+
+time:
+  - platform: sntp
+    id: sntp_time
+
+# Sincroniza relógio com o servidor de tempo do Home Assistant
+time:
+  - platform: homeassistant
+
+# Variáveis Globais
+globals:
+  - id: diminui_modo
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: diminui_vel
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: display_ligado
+    type: bool
+    restore_value: no
+    initial_value: 'true'
+
+# Sensor de Temperatura
+dallas:
+#  - pin: 14 #D5
+  - pin: 2 #D4
+    update_interval: 15s
+
+sensor:
+  - platform: dallas
+    id: temperatura_do_ar_condicionado
+    #address: 0x6e3c01f09664e528
+    index: 0
+
+# I2C para PCF8574 e Display
+i2c:
+  id: i2c_bus
+  sda: 4 #D2
+  scl: 5 #D1
+  scan: true
+  frequency: 100kHz
+
+# Usa PCF8574 para os botões
+pcf8574:
+  - id: pcf8574_hub
+    i2c_id: i2c_bus
+    address: 0x27
+    pcf8575: false
+
+# Display
+font:
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 400
+    id: font1
+    size: 16
+
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 400
+    id: font2
+    size: 8
+
+  - file:
+      type: gfonts
+      family: Material+Symbols+Outlined
+    id: font_icon
+    size: 16
+    glyphs: ["\U0000ec17", "\U0000f168", "\U0000f166", "\U0000ebdf", "\U0000ebe3", "\U0000e202"]
+    # Mode Fan Off, Mode Fan, Mode Cool, Signal Cellular Alt 1 Bar, Signal Cellular Alt 2 Bar, Signal Cellular Alt
+
+display:
+  - platform: ssd1306_i2c
+    id: display_oled
+    model: "SSD1306 128x32"
+    address: 0x3C
+    lambda: |-
+      if (id(display_ligado)) {
+        it.printf(0, 0, id(font1), "%2.0f°C", id(ar_condicionado).target_temperature);
+        it.print(0, 24, id(font2), "-");
+        it.print(40, 24, id(font2), "+");
+        it.print(80, 24, id(font2), "M");
+        it.print(120, 24, id(font2), "V");
+        if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+          it.print(80, 0, id(font_icon), "\U0000ec17");
+        } else {
+          if (id(ar_condicionado).mode == CLIMATE_MODE_FAN_ONLY) {
+            it.print(80, 0, id(font_icon), "\U0000f168");
+          } else {
+            it.print(80, 0, id(font_icon), "\U0000f166");
+          }
+        }
+        if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+          it.print(112, 0, id(font_icon), "\U0000ebdf");
+        } else {
+          if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
+            it.print(112, 0, id(font_icon), "\U0000ebe3");
+          } else {
+            it.print(112, 0, id(font_icon), "\U0000e202");
+          }
+        }
+      } else {
+        it.rectangle(0, 0, 128, 32, COLOR_OFF);
+      }
+
+binary_sensor:
+  - platform: status
+    name: "Status"
+
+  - platform: gpio
+    id: botao_mode
+    #pin:
+    #  number: 12 #D6
+    #  mode:
+    #    input: true
+    #    pullup: true
+    #  inverted: true
+    pin:
+      pcf8574: pcf8574_hub
+      number: 4
+      mode:
+        input: true
+      inverted: true
+    on_multi_click:
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - lambda: |-
+              if (id(display_ligado)) {
+                if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+                  auto call = id(ar_condicionado).make_call();
+                  call.set_mode(CLIMATE_MODE_FAN_ONLY);
+                  call.perform();
+                } else {
+                  if (id(ar_condicionado).mode == CLIMATE_MODE_FAN_ONLY) {
+                    if (id(diminui_modo)) {
+                      auto call = id(ar_condicionado).make_call();
+                      call.set_mode(CLIMATE_MODE_OFF);
+                      call.perform();
+                    } else {
+                      auto call = id(ar_condicionado).make_call();
+                      call.set_mode(CLIMATE_MODE_COOL);
+                      call.perform();
+                    }
+                  } else {
+                    auto call = id(ar_condicionado).make_call();
+                    call.set_mode(CLIMATE_MODE_FAN_ONLY);
+                    call.perform();
+                  }
+                }
+              } else {
+                id(display_ligado) = true;
+              }
+      - timing:
+          - ON for at least 4s
+        then:
+          - lambda: |-
+              id(display_ligado) = false;
+      - timing:
+          - ON for at least 30s
+        then:
+          - button.press: reset_to_factory
+
+  - platform: gpio
+    id: botao_vel
+    #pin:
+    #  number: 13 #D7
+    #  mode:
+    #    input: true
+    #    pullup: true
+    #  inverted: true
+    pin:
+      pcf8574: pcf8574_hub
+      number: 5
+      mode:
+        input: true
+      inverted: true
+    on_multi_click:
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - lambda: |-
+              if (id(display_ligado)) {
+                if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+                  auto call = id(ar_condicionado).make_call();
+                  call.set_fan_mode(CLIMATE_FAN_MEDIUM);
+                  call.perform();
+                } else {
+                  if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
+                    if (id(diminui_vel)) {
+                      auto call = id(ar_condicionado).make_call();
+                      call.set_fan_mode(CLIMATE_FAN_LOW);
+                      call.perform();
+                    } else {
+                      auto call = id(ar_condicionado).make_call();
+                      call.set_fan_mode(CLIMATE_FAN_HIGH);
+                      call.perform();
+                    }
+                  } else {
+                    auto call = id(ar_condicionado).make_call();
+                    call.set_fan_mode(CLIMATE_FAN_MEDIUM);
+                    call.perform();
+                  }
+                }
+              } else {
+                id(display_ligado) = true;
+              }
+      - timing:
+          - ON for at least 4s
+        then:
+          - lambda: |-
+              id(display_ligado) = false;
+
+  - platform: gpio
+    id: botao_temp_menos
+    #pin:
+    #  number: 0 #D3
+    #  mode:
+    #    input: true
+    #    pullup: true
+    #  inverted: true
+    pin:
+      pcf8574: pcf8574_hub
+      number: 6
+      mode:
+        input: true
+      inverted: true
+    on_multi_click:
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - lambda: |-
+              if (id(display_ligado)) {
+                auto call = id(ar_condicionado).make_call();
+                call.set_target_temperature(id(ar_condicionado).target_temperature - 1);
+                call.perform();
+              } else {
+                id(display_ligado) = true;
+              }
+      - timing:
+          - ON for at least 4s
+        then:
+          - lambda: |-
+              id(display_ligado) = false;
+
+  - platform: gpio
+    id: botao_temp_mais
+    #pin:
+    #  number: 2 #D4
+    #  mode:
+    #    input: true
+    #    pullup: true
+    #  inverted: true
+    pin:
+      pcf8574: pcf8574_hub
+      number: 7
+      mode:
+        input: true
+      inverted: true
+    on_multi_click:
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - lambda: |-
+              if (id(display_ligado)) {
+                auto call = id(ar_condicionado).make_call();
+                call.set_target_temperature(id(ar_condicionado).target_temperature + 1);
+                call.perform();
+              } else {
+                id(display_ligado) = true;
+              }
+      - timing:
+          - ON for at least 4s
+        then:
+          - lambda: |-
+              id(display_ligado) = false;
+
+switch:
+  - platform: gpio
+    id: rele_geral
+    pin:
+      pcf8574: pcf8574_hub
+      number: 0
+      mode:
+        output: true
+      inverted: true
+
+  - platform: gpio
+    id: rele_do_compressor
+    pin:
+      pcf8574: pcf8574_hub
+      number: 1
+      mode:
+        output: true
+      inverted: true
+
+  - platform: gpio
+    id: rele_do_ventilador_med
+    pin:
+      pcf8574: pcf8574_hub
+      number: 2
+      mode:
+        output: true
+      inverted: true
+
+  - platform: gpio
+    id: rele_do_ventilador_max
+    pin:
+      pcf8574: pcf8574_hub
+      number: 3
+      mode:
+        output: true
+      inverted: true
+
+climate:
+  - platform: thermostat
+    name: "${friendly_name}"
+    id: ar_condicionado
+    sensor: temperatura_do_ar_condicionado
+    min_cooling_off_time: 30s
+    min_cooling_run_time: 1s
+    min_idle_time: 30s
+    min_fan_mode_switching_time: 1s
+    min_fanning_off_time: 1s
+    min_fanning_run_time: 1s
+    fan_only_cooling: false
+    fan_with_cooling: false
+    #startup_delay: true
+    cool_deadband: 0.0 °C # histerese acima do set point
+    cool_overrun: 0.5 °C  # histerese abaixo do set point
+
+    cool_action:
+      - switch.turn_on: rele_do_compressor
+
+    idle_action:
+      - switch.turn_off: rele_do_compressor
+
+    off_mode:
+      - switch.turn_off: rele_geral
+      - switch.turn_off: rele_do_compressor
+      - switch.turn_off: rele_do_ventilador_med
+      - switch.turn_off: rele_do_ventilador_max
+
+    cool_mode:
+      - lambda: |-
+          if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+            id(rele_geral).turn_on();
+            id(rele_do_ventilador_med).turn_off();
+            id(rele_do_ventilador_max).turn_off();
+          } else {
+            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
+              id(rele_geral).turn_on();
+              id(rele_do_ventilador_max).turn_off();
+              id(rele_do_ventilador_med).turn_on();
+            } else {
+              id(rele_geral).turn_on();
+              id(rele_do_ventilador_med).turn_off();
+              id(rele_do_ventilador_max).turn_on();
+            }
+          }
+
+    fan_only_mode:
+      #- switch.turn_off: rele_do_compressor
+      - lambda: |-
+          if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+            id(rele_geral).turn_on();
+            id(rele_do_ventilador_med).turn_off();
+            id(rele_do_ventilador_max).turn_off();
+          } else {
+            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
+              id(rele_geral).turn_on();
+              id(rele_do_ventilador_max).turn_off();
+              id(rele_do_ventilador_med).turn_on();
+            } else {
+              id(rele_geral).turn_on();
+              id(rele_do_ventilador_med).turn_off();
+              id(rele_do_ventilador_max).turn_on();
+            }
+          }
+
+    fan_only_action:
+      - switch.turn_off: rele_do_compressor
+
+    fan_mode_low_action:
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(rele_geral).turn_off();
+            id(rele_do_compressor).turn_off();
+            id(rele_do_ventilador_med).turn_off();
+            id(rele_do_ventilador_max).turn_off();
+          } else {
+            id(rele_geral).turn_on();
+            id(rele_do_ventilador_med).turn_off();
+            id(rele_do_ventilador_max).turn_off();
+          }
+
+    fan_mode_medium_action:
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(rele_geral).turn_off();
+            id(rele_do_compressor).turn_off();
+            id(rele_do_ventilador_med).turn_off();
+            id(rele_do_ventilador_max).turn_off();
+          } else {
+            id(rele_geral).turn_on();
+            id(rele_do_ventilador_max).turn_off();
+            id(rele_do_ventilador_med).turn_on();
+          }
+
+    fan_mode_high_action:
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(rele_geral).turn_off();
+            id(rele_do_compressor).turn_off();
+            id(rele_do_ventilador_med).turn_off();
+            id(rele_do_ventilador_max).turn_off();
+          } else {
+            id(rele_geral).turn_on();
+            id(rele_do_ventilador_med).turn_off();
+            id(rele_do_ventilador_max).turn_on();
+          }
+
+    default_preset: Desligado
+    on_boot_restore_from: memory
+
+    preset:
+      - name: Desligado
+        default_target_temperature_high: 22 °C
+        mode: 'off'
+        fan_mode: HIGH
+
+    visual:
+      min_temperature: 18 °C
+      max_temperature: 30 °C
+      temperature_step:
+        target_temperature: 1.0
+        current_temperature: 0.1
+
+    on_control:
+      - logger.log: "Control input received; globals e display updated!"
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(diminui_modo) = false;
+          }
+          if (id(ar_condicionado).mode == CLIMATE_MODE_COOL) {
+            id(diminui_modo) = true;
+          }
+          if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+            id(diminui_vel) = false;
+          }
+          if (id(ar_condicionado).fan_mode == CLIMATE_FAN_HIGH) {
+            id(diminui_vel) = true;
+          }
+      #    id(display_oled).update();
+
+button:
+  - platform: factory_reset
+    name: "Factory Reset"
+    disabled_by_default: true
+    id: reset_to_factory
+
+  - platform: safe_mode
+    name: "Safe Mode"
+    disabled_by_default: true
+    internal: false
+
+  - platform: restart
+    name: "ESP Restart"
