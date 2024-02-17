@@ -13,6 +13,7 @@ runs:
         apt update
         apt install -y jq
 
+
     - name: Get info
       id: info
       shell: bash
