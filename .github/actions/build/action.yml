@@ -12,7 +12,6 @@ runs:
       run: |
         apt update
         apt install -y jq
-        pip3 install yq
 
     - name: Get info
       id: info
