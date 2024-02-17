@@ -38,10 +38,6 @@ captive_portal:
 dashboard_import:
   package_import_url: github://leofig-rj/leofig-configs/ar-cond.yaml
 
-time:
-  - platform: sntp
-    id: sntp_time
-
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
   - platform: homeassistant
