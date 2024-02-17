@@ -12,6 +12,7 @@ runs:
       run: |
         apt update
         apt install -y jq
+        apt-get install python3-pip
         pip3 install yq
 
     - name: Get info
