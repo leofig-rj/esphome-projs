@@ -1,5 +1,5 @@
 substitutions:
-  name: "leofig-ar-cond"
+  name: "ar-cond"
   friendly_name: "Ar Condicionado"
   room: ""
   device_description: "leofig ar condicionado"
@@ -36,7 +36,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://leofig-rj/leofig-configs/leofig-ar-cond.yaml
+  package_import_url: github://leofig-rj/leofig-configs/ar-cond.yaml
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:

@@ -19,7 +19,7 @@ runs:
       id: info
       shell: bash
       run: |
-        esphome=$(esphome config leofig-${{ inputs.device }}.yaml | yq ".esphome")
+        esphome=$(esphome config ${{ inputs.device }}.yaml | yq ".esphome")
         name=$(echo $esphome | yq -r ".project.name")
         version=$(echo $esphome | yq -r ".project.version")
         devicename=$(echo $esphome | yq -r ".name")
@@ -34,7 +34,7 @@ runs:
 
     - name: Compile ${{ inputs.device }}
       shell: bash
-      run: esphome compile leofig-${{ inputs.device }}.yaml
+      run: esphome compile ${{ inputs.device }}.yaml
 
     - name: Copy generated file
       shell: bash
@@ -45,5 +45,5 @@ runs:
     - name: Upload binary
       uses: actions/upload-artifact@v3
       with:
-        name: LeoFig Binaries (${{ steps.info.outputs.esphome_version }})
+        name: Leo Fig Binaries (${{ steps.info.outputs.esphome_version }})
         path: ./${{ steps.info.outputs.name }}--${{ steps.info.outputs.version }}.bin
