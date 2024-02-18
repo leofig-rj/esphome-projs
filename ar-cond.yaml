@@ -2,7 +2,6 @@ substitutions:
   name: "ar-cond"
   friendly_name: "Ar Condicionado"
   room: ""
-  device_description: "leofig ar condicionado"
   project_name: "leofig.Ar Condicionado"
   project_version: "1.0"
 
