@@ -60,14 +60,12 @@ globals:
 
 # Sensor de Temperatura
 dallas:
-#  - pin: 14 #D5
   - pin: 2 #D4
     update_interval: 15s
 
 sensor:
   - platform: dallas
     id: temperatura_do_ar_condicionado
-    #address: 0x6e3c01f09664e528
     index: 0
 
 # I2C para PCF8574 e Display
@@ -106,8 +104,8 @@ font:
       family: Material+Symbols+Outlined
     id: font_icon
     size: 16
-    glyphs: ["\U0000ec17", "\U0000f168", "\U0000f166", "\U0000ebdf", "\U0000ebe3", "\U0000e202"]
     # Mode Fan Off, Mode Fan, Mode Cool, Signal Cellular Alt 1 Bar, Signal Cellular Alt 2 Bar, Signal Cellular Alt
+    glyphs: ["\U0000ec17", "\U0000f168", "\U0000f166", "\U0000ebdf", "\U0000ebe3", "\U0000e202"]
 
 display:
   - platform: ssd1306_i2c
@@ -321,40 +319,36 @@ binary_sensor:
 
 switch:
   - platform: gpio
-    id: rele_geral
-    pin:
-      pcf8574: pcf8574_hub
-      number: 0
-      mode:
-        output: true
-      inverted: true
-
-  - platform: gpio
     id: rele_do_compressor
     pin:
-      pcf8574: pcf8574_hub
-      number: 1
+      number: 14 #D5
       mode:
         output: true
-      inverted: true
+      inverted: false
 
   - platform: gpio
-    id: rele_do_ventilador_med
+    id: rele_do_vent_geral
     pin:
-      pcf8574: pcf8574_hub
-      number: 2
+      number: 12 #D6
       mode:
         output: true
-      inverted: true
+      inverted: false
 
   - platform: gpio
-    id: rele_do_ventilador_max
+    id: rele_do_vent_med
     pin:
-      pcf8574: pcf8574_hub
-      number: 3
+      number: 13 #D7
       mode:
         output: true
-      inverted: true
+      inverted: false
+
+  - platform: gpio
+    id: rele_do_vent_max
+    pin:
+      number: 16 #D0
+      mode:
+        output: true
+      inverted: false
 
 climate:
   - platform: thermostat
@@ -380,45 +374,44 @@ climate:
       - switch.turn_off: rele_do_compressor
 
     off_mode:
-      - switch.turn_off: rele_geral
       - switch.turn_off: rele_do_compressor
-      - switch.turn_off: rele_do_ventilador_med
-      - switch.turn_off: rele_do_ventilador_max
+      - switch.turn_off: rele_do_vent_geral
+      - switch.turn_off: rele_do_vent_med
+      - switch.turn_off: rele_do_vent_max
 
     cool_mode:
       - lambda: |-
           if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
-            id(rele_geral).turn_on();
-            id(rele_do_ventilador_med).turn_off();
-            id(rele_do_ventilador_max).turn_off();
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
           } else {
             if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
-              id(rele_geral).turn_on();
-              id(rele_do_ventilador_max).turn_off();
-              id(rele_do_ventilador_med).turn_on();
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_max).turn_off();
+              id(rele_do_vent_med).turn_on();
             } else {
-              id(rele_geral).turn_on();
-              id(rele_do_ventilador_med).turn_off();
-              id(rele_do_ventilador_max).turn_on();
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_med).turn_off();
+              id(rele_do_vent_max).turn_on();
             }
           }
 
     fan_only_mode:
-      #- switch.turn_off: rele_do_compressor
       - lambda: |-
           if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
-            id(rele_geral).turn_on();
-            id(rele_do_ventilador_med).turn_off();
-            id(rele_do_ventilador_max).turn_off();
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
           } else {
             if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
-              id(rele_geral).turn_on();
-              id(rele_do_ventilador_max).turn_off();
-              id(rele_do_ventilador_med).turn_on();
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_max).turn_off();
+              id(rele_do_vent_med).turn_on();
             } else {
-              id(rele_geral).turn_on();
-              id(rele_do_ventilador_med).turn_off();
-              id(rele_do_ventilador_max).turn_on();
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_med).turn_off();
+              id(rele_do_vent_max).turn_on();
             }
           }
 
@@ -428,40 +421,40 @@ climate:
     fan_mode_low_action:
       - lambda: |-
           if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
-            id(rele_geral).turn_off();
             id(rele_do_compressor).turn_off();
-            id(rele_do_ventilador_med).turn_off();
-            id(rele_do_ventilador_max).turn_off();
+            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
           } else {
-            id(rele_geral).turn_on();
-            id(rele_do_ventilador_med).turn_off();
-            id(rele_do_ventilador_max).turn_off();
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
           }
 
     fan_mode_medium_action:
       - lambda: |-
           if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
-            id(rele_geral).turn_off();
             id(rele_do_compressor).turn_off();
-            id(rele_do_ventilador_med).turn_off();
-            id(rele_do_ventilador_max).turn_off();
+            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
           } else {
-            id(rele_geral).turn_on();
-            id(rele_do_ventilador_max).turn_off();
-            id(rele_do_ventilador_med).turn_on();
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_max).turn_off();
+            id(rele_do_vent_med).turn_on();
           }
 
     fan_mode_high_action:
       - lambda: |-
           if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
-            id(rele_geral).turn_off();
             id(rele_do_compressor).turn_off();
-            id(rele_do_ventilador_med).turn_off();
-            id(rele_do_ventilador_max).turn_off();
+            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
           } else {
-            id(rele_geral).turn_on();
-            id(rele_do_ventilador_med).turn_off();
-            id(rele_do_ventilador_max).turn_on();
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_on();
           }
 
     default_preset: Desligado
