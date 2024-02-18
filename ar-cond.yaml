@@ -3,7 +3,7 @@ substitutions:
   friendly_name: "Ar Condicionado"
   room: ""
   device_description: "leofig ar condicionado"
-  project_name: "Leo Fig.Ar Condicionado"
+  project_name: "leofig.Ar Condicionado"
   project_version: "1.0"
 
 esphome:
