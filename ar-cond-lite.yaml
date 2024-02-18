@@ -2,7 +2,7 @@ substitutions:
   name: "ar-cond-lite"
   friendly_name: "Ar Condicionado Lite"
   room: ""
-  project_name: "leofig-rj.esphome-projs.ar-cond-lite"
+  project_name: "leofig-rj.esphome-projs/ar-cond-lite"
   project_version: "1.0"
 
 esphome:
