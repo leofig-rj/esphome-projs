@@ -43,13 +43,6 @@ dashboard_import:
 time:
   - platform: homeassistant
 
-# Variáveis Globais
-globals:
-  - id: indice_botao
-    type: int
-    restore_value: no
-    initial_value: '0'
-
 # Sensor de Temperatura
 dallas:
   - pin: 2 #D4
@@ -65,7 +58,7 @@ binary_sensor:
     name: "Status"
 
   - platform: gpio
-    id: botao_mode
+    id: botao_cmd
     pin:
       number: 0 #D3
       mode:
@@ -78,18 +71,20 @@ binary_sensor:
           - OFF for at least 0.2s
         then:
           - lambda: |-
-                if (id(indice_botao) == 0) {
-                  auto call = id(ar_condicionado).make_call();
-                  call.set_mode(CLIMATE_MODE_COOL);
-                  call.set_fan_mode(CLIMATE_FAN_LOW);
-                  call.perform();
-                } else {
-                  if (id(indice_botao) == 1) {
+              if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+                auto call = id(ar_condicionado).make_call();
+                call.set_mode(CLIMATE_MODE_COOL);
+                call.set_fan_mode(CLIMATE_FAN_LOW);
+                call.set_target_temperature(22);
+                call.perform();
+              } else {
+                if (id(ar_condicionado).mode == CLIMATE_MODE_COOL) {
+                  if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
                     auto call = id(ar_condicionado).make_call();
                     call.set_fan_mode(CLIMATE_FAN_MEDIUM);
                     call.perform();
                   } else {
-                    if (id(indice_botao) == 2) {
+                    if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
                       auto call = id(ar_condicionado).make_call();
                       call.set_fan_mode(CLIMATE_FAN_HIGH);
                       call.perform();
@@ -100,7 +95,15 @@ binary_sensor:
                       call.perform();
                     }
                   }
+                } else {
+                  if (id(ar_condicionado).mode == CLIMATE_MODE_FAN_ONLY) {
+                    auto call = id(ar_condicionado).make_call();
+                    call.set_mode(CLIMATE_MODE_OFF);
+                    call.set_fan_mode(CLIMATE_FAN_LOW);
+                    call.perform();
+                  }
                 }
+              }
       - timing:
           - ON for at least 10s
         then:
@@ -263,25 +266,7 @@ climate:
         current_temperature: 0.1
 
     on_control:
-      - logger.log: "Control input received; globals updated!"
-      - lambda: |-
-          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
-            id(indice_botao) = 0;
-          }
-          if (id(ar_condicionado).mode == CLIMATE_MODE_COOL) {
-            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
-              id(indice_botao) = 1;
-            }
-            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
-              id(indice_botao) = 2;
-            }
-            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_HIGH) {
-              id(indice_botao) = 3;
-            }
-          }
-          if (id(ar_condicionado).mode == CLIMATE_MODE_FAN_ONLY) {
-            id(indice_botao) = 10;
-          }
+      - logger.log: "Control input received!"
 
 button:
   - platform: factory_reset
