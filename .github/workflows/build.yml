@@ -14,6 +14,7 @@ jobs:
       matrix:
         device:
           - ar-cond
+          - ar-cond-lite
         esphome:
           - latest
           - beta
