@@ -1,0 +1,298 @@
+substitutions:
+  name: "ar-cond-lite"
+  friendly_name: "Ar Condicionado Lite"
+  room: ""
+  project_name: "leofig.Ar Condicionado Lite"
+  project_version: "1.0"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: true
+  project:
+    name: "${project_name}"
+    version: "${project_version}"
+
+esp8266:
+  board: esp01_1m
+
+api:
+
+ota:
+
+logger:
+  baud_rate: 0
+
+mdns:
+  disabled: false
+
+web_server:
+  port: 80
+
+wifi:
+  # Isso cria um AP com o nome do dispositivo e senha leofig-rj.
+  ap:
+    password: "leofig-rj"
+
+captive_portal:
+
+dashboard_import:
+  package_import_url: github://leofig-rj/esphome-projs/ar-cond-lite.yaml
+
+# Sincroniza relógio com o servidor de tempo do Home Assistant
+time:
+  - platform: homeassistant
+
+# Variáveis Globais
+globals:
+  - id: indice_botao
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+# Sensor de Temperatura
+dallas:
+  - pin: 2 #D4
+    update_interval: 15s
+
+sensor:
+  - platform: dallas
+    id: temperatura_do_ar_condicionado
+    index: 0
+
+binary_sensor:
+  - platform: status
+    name: "Status"
+
+  - platform: gpio
+    id: botao_mode
+    pin:
+      number: 0 #D3
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    on_multi_click:
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - lambda: |-
+                if (id(indice_botao) == 0) {
+                  auto call = id(ar_condicionado).make_call();
+                  call.set_mode(CLIMATE_MODE_COOL);
+                  call.set_fan_mode(CLIMATE_FAN_LOW);
+                  call.perform();
+                } else {
+                  if (id(indice_botao) == 1) {
+                    auto call = id(ar_condicionado).make_call();
+                    call.set_fan_mode(CLIMATE_FAN_MEDIUM);
+                    call.perform();
+                  } else {
+                    if (id(indice_botao) == 2) {
+                      auto call = id(ar_condicionado).make_call();
+                      call.set_fan_mode(CLIMATE_FAN_HIGH);
+                      call.perform();
+                    } else {
+                      auto call = id(ar_condicionado).make_call();
+                      call.set_mode(CLIMATE_MODE_OFF);
+                      call.set_fan_mode(CLIMATE_FAN_LOW);
+                      call.perform();
+                    }
+                  }
+                }
+      - timing:
+          - ON for at least 10s
+        then:
+          - button.press: reset_to_factory
+
+switch:
+  - platform: gpio
+    id: rele_do_compressor
+    pin:
+      number: 14 #D5
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    id: rele_do_vent_geral
+    pin:
+      number: 12 #D6
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    id: rele_do_vent_med
+    pin:
+      number: 13 #D7
+      mode:
+        output: true
+      inverted: false
+
+  - platform: gpio
+    id: rele_do_vent_max
+    pin:
+      number: 16 #D0
+      mode:
+        output: true
+      inverted: false
+
+climate:
+  - platform: thermostat
+    name: "${friendly_name}"
+    id: ar_condicionado
+    sensor: temperatura_do_ar_condicionado
+    min_cooling_off_time: 30s
+    min_cooling_run_time: 1s
+    min_idle_time: 30s
+    min_fan_mode_switching_time: 1s
+    min_fanning_off_time: 1s
+    min_fanning_run_time: 1s
+    fan_only_cooling: false
+    fan_with_cooling: false
+    #startup_delay: true
+    cool_deadband: 0.0 °C # histerese acima do set point
+    cool_overrun: 0.5 °C  # histerese abaixo do set point
+
+    cool_action:
+      - switch.turn_on: rele_do_compressor
+
+    idle_action:
+      - switch.turn_off: rele_do_compressor
+
+    off_mode:
+      - switch.turn_off: rele_do_compressor
+      - switch.turn_off: rele_do_vent_geral
+      - switch.turn_off: rele_do_vent_med
+      - switch.turn_off: rele_do_vent_max
+
+    cool_mode:
+      - lambda: |-
+          if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
+          } else {
+            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_max).turn_off();
+              id(rele_do_vent_med).turn_on();
+            } else {
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_med).turn_off();
+              id(rele_do_vent_max).turn_on();
+            }
+          }
+
+    fan_only_mode:
+      - lambda: |-
+          if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
+          } else {
+            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_max).turn_off();
+              id(rele_do_vent_med).turn_on();
+            } else {
+              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_med).turn_off();
+              id(rele_do_vent_max).turn_on();
+            }
+          }
+
+    fan_only_action:
+      - switch.turn_off: rele_do_compressor
+
+    fan_mode_low_action:
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(rele_do_compressor).turn_off();
+            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
+          } else {
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
+          }
+
+    fan_mode_medium_action:
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(rele_do_compressor).turn_off();
+            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
+          } else {
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_max).turn_off();
+            id(rele_do_vent_med).turn_on();
+          }
+
+    fan_mode_high_action:
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(rele_do_compressor).turn_off();
+            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_off();
+          } else {
+            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_med).turn_off();
+            id(rele_do_vent_max).turn_on();
+          }
+
+    default_preset: Desligado
+    on_boot_restore_from: memory
+
+    preset:
+      - name: Desligado
+        default_target_temperature_high: 22 °C
+        mode: 'off'
+        fan_mode: HIGH
+
+    visual:
+      min_temperature: 18 °C
+      max_temperature: 30 °C
+      temperature_step:
+        target_temperature: 1.0
+        current_temperature: 0.1
+
+    on_control:
+      - logger.log: "Control input received; globals updated!"
+      - lambda: |-
+          if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+            id(indice_botao) = 0;
+          }
+          if (id(ar_condicionado).mode == CLIMATE_MODE_COOL) {
+            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
+              id(indice_botao) = 1;
+            }
+            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
+              id(indice_botao) = 2;
+            }
+            if (id(ar_condicionado).fan_mode == CLIMATE_FAN_HIGH) {
+              id(indice_botao) = 3;
+            }
+          }
+          if (id(ar_condicionado).mode == CLIMATE_MODE_FAN_ONLY) {
+            id(indice_botao) = 10;
+          }
+
+button:
+  - platform: factory_reset
+    name: "Factory Reset"
+    disabled_by_default: true
+    id: reset_to_factory
+
+  - platform: safe_mode
+    name: "Safe Mode"
+    disabled_by_default: true
+    internal: false
+
+  - platform: restart
+    name: "ESP Restart"
