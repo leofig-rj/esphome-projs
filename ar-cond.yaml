@@ -33,7 +33,7 @@ web_server:
 wifi:
   #ap: {} # Isso cria um AP com o nome do dispositivo e sem senha.
   ap:
-    password: "leofig"
+    password: "leofig-rj"
 
 captive_portal:
 
