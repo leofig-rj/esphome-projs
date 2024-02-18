@@ -31,7 +31,9 @@ web_server:
   port: 80
 
 wifi:
-  ap: {} # Isso cria um AP com o nome do dispositivo e sem senha.
+  #ap: {} # Isso cria um AP com o nome do dispositivo e sem senha.
+  ap:
+    password: "leofig"
 
 captive_portal:
 
