@@ -37,6 +37,7 @@ captive_portal:
 
 dashboard_import:
   package_import_url: github://leofig-rj/esphome-projs/ar-cond-lite.yaml@v2024.2.3
+  import_full_config: true
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
@@ -255,7 +256,7 @@ climate:
       - name: Desligado
         default_target_temperature_high: 22 °C
         mode: 'off'
-        fan_mode: HIGH
+        fan_mode: LOW
 
     visual:
       min_temperature: 18 °C
