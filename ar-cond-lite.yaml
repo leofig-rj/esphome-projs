@@ -282,4 +282,3 @@ button:
 
   - platform: restart
     name: "ESP Restart"
-
