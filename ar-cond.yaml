@@ -147,12 +147,6 @@ binary_sensor:
 
   - platform: gpio
     id: botao_mode
-    #pin:
-    #  number: 12 #D6
-    #  mode:
-    #    input: true
-    #    pullup: true
-    #  inverted: true
     pin:
       pcf8574: pcf8574_hub
       number: 4
@@ -202,12 +196,6 @@ binary_sensor:
 
   - platform: gpio
     id: botao_vel
-    #pin:
-    #  number: 13 #D7
-    #  mode:
-    #    input: true
-    #    pullup: true
-    #  inverted: true
     pin:
       pcf8574: pcf8574_hub
       number: 5
@@ -253,12 +241,6 @@ binary_sensor:
 
   - platform: gpio
     id: botao_temp_menos
-    #pin:
-    #  number: 0 #D3
-    #  mode:
-    #    input: true
-    #    pullup: true
-    #  inverted: true
     pin:
       pcf8574: pcf8574_hub
       number: 6
@@ -286,12 +268,6 @@ binary_sensor:
 
   - platform: gpio
     id: botao_temp_mais
-    #pin:
-    #  number: 2 #D4
-    #  mode:
-    #    input: true
-    #    pullup: true
-    #  inverted: true
     pin:
       pcf8574: pcf8574_hub
       number: 7
