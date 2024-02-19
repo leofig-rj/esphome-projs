@@ -38,6 +38,7 @@ captive_portal:
 
 dashboard_import:
   package_import_url: github://leofig-rj/esphome-projs/ar-cond.yaml
+  import_full_config: true
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
