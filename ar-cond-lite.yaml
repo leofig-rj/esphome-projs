@@ -3,7 +3,7 @@ substitutions:
   friendly_name: "Ar Condicionado Lite"
   room: ""
   project_name: "leofig-rj.ar-cond-lite"
-  project_version: "2024.2.3"
+  project_version: "v2024.2.3"
 
 esphome:
   name: "${name}"
@@ -36,7 +36,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://leofig-rj/esphome-projs/ar-cond-lite.yaml@2024.2.3
+  package_import_url: github://leofig-rj/esphome-projs/ar-cond-lite.yaml@v2024.2.3
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
