@@ -3,7 +3,7 @@ substitutions:
   friendly_name: "Ar Condicionado"
   room: ""
   project_name: "leofig.ar-cond"
-  project_version: "1.0"
+  project_version: "2024.2.1"
 
 esphome:
   name: "${name}"
@@ -30,14 +30,14 @@ web_server:
   port: 80
 
 wifi:
-  # Isso cria um AP com o nome do dispositivo e senha leofig-rj.
-  ap:
-    password: "leofig-rj"
+  # Isso cria um AP com o nome do dispositivo e sem senha.
+  ap: {}
 
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://leofig-rj/esphome-projs/ar-cond.yaml
+  package_import_url: github://leofig-rj/esphome-projs/ar-cond.yaml@2024.2.1
+  import_full_config: true
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
