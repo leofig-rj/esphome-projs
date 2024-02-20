@@ -302,7 +302,7 @@ switch:
       inverted: false
 
   - platform: gpio
-    id: rele_do_vent_geral
+    id: rele_do_vent_min
     pin:
       number: 12 #D6
       mode:
@@ -350,23 +350,23 @@ climate:
 
     off_mode:
       - switch.turn_off: rele_do_compressor
-      - switch.turn_off: rele_do_vent_geral
+      - switch.turn_off: rele_do_vent_min
       - switch.turn_off: rele_do_vent_med
       - switch.turn_off: rele_do_vent_max
 
     cool_mode:
       - lambda: |-
           if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
-            id(rele_do_vent_geral).turn_on();
             id(rele_do_vent_med).turn_off();
             id(rele_do_vent_max).turn_off();
+            id(rele_do_vent_min).turn_on();
           } else {
             if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
-              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_min).turn_off();
               id(rele_do_vent_max).turn_off();
               id(rele_do_vent_med).turn_on();
             } else {
-              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_min).turn_off();
               id(rele_do_vent_med).turn_off();
               id(rele_do_vent_max).turn_on();
             }
@@ -375,16 +375,16 @@ climate:
     fan_only_mode:
       - lambda: |-
           if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
-            id(rele_do_vent_geral).turn_on();
             id(rele_do_vent_med).turn_off();
             id(rele_do_vent_max).turn_off();
+            id(rele_do_vent_min).turn_on();
           } else {
             if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
-              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_min).turn_off();
               id(rele_do_vent_max).turn_off();
               id(rele_do_vent_med).turn_on();
             } else {
-              id(rele_do_vent_geral).turn_on();
+              id(rele_do_vent_min).turn_off();
               id(rele_do_vent_med).turn_off();
               id(rele_do_vent_max).turn_on();
             }
@@ -397,24 +397,24 @@ climate:
       - lambda: |-
           if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
             id(rele_do_compressor).turn_off();
-            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_min).turn_off();
             id(rele_do_vent_med).turn_off();
             id(rele_do_vent_max).turn_off();
           } else {
-            id(rele_do_vent_geral).turn_on();
             id(rele_do_vent_med).turn_off();
             id(rele_do_vent_max).turn_off();
+            id(rele_do_vent_min).turn_on();
           }
 
     fan_mode_medium_action:
       - lambda: |-
           if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
             id(rele_do_compressor).turn_off();
-            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_min).turn_off();
             id(rele_do_vent_med).turn_off();
             id(rele_do_vent_max).turn_off();
           } else {
-            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_min).turn_off();
             id(rele_do_vent_max).turn_off();
             id(rele_do_vent_med).turn_on();
           }
@@ -423,11 +423,11 @@ climate:
       - lambda: |-
           if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
             id(rele_do_compressor).turn_off();
-            id(rele_do_vent_geral).turn_off();
+            id(rele_do_vent_min).turn_off();
             id(rele_do_vent_med).turn_off();
             id(rele_do_vent_max).turn_off();
           } else {
-            id(rele_do_vent_geral).turn_on();
+            id(rele_do_vent_min).turn_off();
             id(rele_do_vent_med).turn_off();
             id(rele_do_vent_max).turn_on();
           }
