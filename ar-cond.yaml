@@ -36,7 +36,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://leofig-rj/esphome-projs/ar-cond.yaml@v2024.2.6
+  package_import_url: github://leofig-rj/esphome-projs/ar-cond.yaml@main
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
@@ -96,7 +96,7 @@ font:
       family: Roboto
       weight: 400
     id: font2
-    size: 8
+    size: 12
 
   - file:
       type: gfonts
