@@ -3,7 +3,7 @@ substitutions:
   friendly_name: "Ar Condicionado"
   room: ""
   project_name: "leofig.ar-cond"
-  project_version: "v2024.2.6"
+  project_version: "v2024.2.7"
 
 esphome:
   name: "${name}"
@@ -36,7 +36,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://leofig-rj/esphome-projs/ar-cond.yaml@v2024.2.6
+  package_import_url: github://leofig-rj/esphome-projs/ar-cond.yaml@v2024.2.7
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
@@ -239,7 +239,7 @@ binary_sensor:
               id(display_ligado) = false;
 
   - platform: gpio
-    id: botao_temp_menos
+    id: botao_temp_mais
     pin:
       pcf8574: pcf8574_hub
       number: 6
@@ -254,7 +254,7 @@ binary_sensor:
           - lambda: |-
               if (id(display_ligado)) {
                 auto call = id(ar_condicionado).make_call();
-                call.set_target_temperature(id(ar_condicionado).target_temperature - 1);
+                call.set_target_temperature(id(ar_condicionado).target_temperature + 1);
                 call.perform();
               } else {
                 id(display_ligado) = true;
@@ -266,7 +266,7 @@ binary_sensor:
               id(display_ligado) = false;
 
   - platform: gpio
-    id: botao_temp_mais
+    id: botao_temp_menos
     pin:
       pcf8574: pcf8574_hub
       number: 7
@@ -281,7 +281,7 @@ binary_sensor:
           - lambda: |-
               if (id(display_ligado)) {
                 auto call = id(ar_condicionado).make_call();
-                call.set_target_temperature(id(ar_condicionado).target_temperature + 1);
+                call.set_target_temperature(id(ar_condicionado).target_temperature - 1);
                 call.perform();
               } else {
                 id(display_ligado) = true;
