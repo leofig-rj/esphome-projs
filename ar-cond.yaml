@@ -96,7 +96,7 @@ font:
       family: Roboto
       weight: 400
     id: font2
-    size: 12
+    size: 8
 
   - file:
       type: gfonts
@@ -114,10 +114,10 @@ display:
     lambda: |-
       if (id(display_ligado)) {
         it.printf(0, 0, id(font1), "%2.0f°C", id(ar_condicionado).target_temperature);
-        it.print(0, 20, id(font2), "-");
-        it.print(40, 20, id(font2), "+");
-        it.print(80, 20, id(font2), "M");
-        it.print(120, 20, id(font2), "V");
+        it.print(0, 24, id(font2), "-");
+        it.print(40, 24, id(font2), "+");
+        it.print(80, 24, id(font2), "M");
+        it.print(120, 24, id(font2), "V");
         if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
           it.print(80, 0, id(font_icon), "\U0000ec17");
         } else {
