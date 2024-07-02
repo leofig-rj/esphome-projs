@@ -19,6 +19,7 @@ esp8266:
 api:
 
 ota:
+  - platform: esphome
 
 logger:
   baud_rate: 0
@@ -52,7 +53,6 @@ sensor:
   - platform: dallas_temp
     one_wire_id: one_wire_1
     id: temperatura_do_ar_condicionado
-    index: 0
     update_interval: 15s
 
 binary_sensor:
