@@ -43,14 +43,17 @@ time:
   - platform: homeassistant
 
 # Sensor de Temperatura
-dallas:
-  - pin: 2 #D4
-    update_interval: 15s
+one_wire:
+  - platform: gpio
+    id: one_wire_1
+    pin: 2 #D4
 
 sensor:
-  - platform: dallas
+  - platform: dallas_temp
+    one_wire_id: one_wire_1
     id: temperatura_do_ar_condicionado
     index: 0
+    update_interval: 15s
 
 binary_sensor:
   - platform: status
