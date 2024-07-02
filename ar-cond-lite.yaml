@@ -3,7 +3,7 @@ substitutions:
   friendly_name: "Ar Condicionado Lite"
   room: ""
   project_name: "leofig-rj.ar-cond-lite"
-  project_version: "v2024.7.2"
+  project_version: "v2024.7.3"
 
 esphome:
   name: "${name}"
@@ -37,7 +37,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://leofig-rj/esphome-projs/ar-cond-lite.yaml@v2024.7.2
+  package_import_url: github://leofig-rj/esphome-projs/ar-cond-lite.yaml@v2024.7.3
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
@@ -69,8 +69,8 @@ binary_sensor:
       inverted: true
     on_multi_click:
       - timing:
-          - ON for at most 0.5s
-          - OFF for at least 0.2s
+          - ON for at most 1s
+          - OFF for at least 0.5s
         then:
           - lambda: |-
               if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
