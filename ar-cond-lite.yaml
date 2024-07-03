@@ -1,6 +1,6 @@
 substitutions:
   name: "ar-cond-lite"
-  friendly_name: "Ar Condicionado Lite"
+  friendly_name: "Ar Condicionado"
   room: ""
   project_name: "leofig-rj.ar-cond-lite"
   project_version: "v2024.7.4"
