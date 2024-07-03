@@ -330,7 +330,7 @@ switch:
 
 climate:
   - platform: thermostat
-    name: "${friendly_name}"
+    name: ""
     id: ar_condicionado
     sensor: temperatura_do_ar_condicionado
     min_cooling_off_time: 30s
