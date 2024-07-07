@@ -3,7 +3,7 @@ substitutions:
   friendly_name: "Ar Condicionado"
   room: ""
   project_name: "leofig-rj.ar-cond-plus"
-  project_version: "v2024.8.0"
+  project_version: "v2024.8.1"
 
 esphome:
   name: "${name}"
@@ -37,7 +37,7 @@ wifi:
 captive_portal:
 
 dashboard_import:
-  package_import_url: github://leofig-rj/esphome-projs/ar-cond-plus.yaml@v2024.8.0
+  package_import_url: github://leofig-rj/esphome-projs/ar-cond-plus.yaml@v2024.8.1
 
 # Sincroniza relógio com o servidor de tempo do Home Assistant
 time:
@@ -116,27 +116,27 @@ display:
     address: 0x3C
     lambda: |-
       if (id(display_ligado)) {
-        it.printf(0, 0, id(font1), "%2.0f°C", id(ar_condicionado).target_temperature);
+        it.printf(8, 0, id(font1), "%2.0f°C", id(ar_condicionado).target_temperature);
         it.print(0, 24, id(font2), "-");
         it.print(40, 24, id(font2), "+");
-        it.print(80, 24, id(font2), "M");
-        it.print(120, 24, id(font2), "V");
-        if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
-          it.print(80, 0, id(font_icon), "\U0000ec17");
-        } else {
-          if (id(ar_condicionado).mode == CLIMATE_MODE_FAN_ONLY) {
-            it.print(80, 0, id(font_icon), "\U0000f168");
-          } else {
-            it.print(80, 0, id(font_icon), "\U0000f166");
-          }
-        }
+        it.print(80, 24, id(font2), "V");
+        it.print(120, 24, id(font2), "M");
         if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
-          it.print(112, 0, id(font_icon), "\U0000ebdf");
+          it.print(72, 0, id(font_icon), "\U0000ebdf");
         } else {
           if (id(ar_condicionado).fan_mode == CLIMATE_FAN_MEDIUM) {
-            it.print(112, 0, id(font_icon), "\U0000ebe3");
+            it.print(72, 0, id(font_icon), "\U0000ebe3");
           } else {
-            it.print(112, 0, id(font_icon), "\U0000e202");
+            it.print(72, 0, id(font_icon), "\U0000e202");
+          }
+        }
+        if (id(ar_condicionado).mode == CLIMATE_MODE_OFF) {
+          it.print(112, 0, id(font_icon), "\U0000ec17");
+        } else {
+          if (id(ar_condicionado).mode == CLIMATE_MODE_FAN_ONLY) {
+            it.print(112, 0, id(font_icon), "\U0000f168");
+          } else {
+            it.print(112, 0, id(font_icon), "\U0000f166");
           }
         }
       } else {
