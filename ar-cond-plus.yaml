@@ -99,7 +99,7 @@ font:
       family: Roboto
       weight: 400
     id: font2
-    size: 8
+    size: 12
 
   - file:
       type: gfonts
@@ -113,14 +113,15 @@ display:
   - platform: ssd1306_i2c
     id: display_oled
     model: "SSD1306 128x32"
+    i2c_id: i2c_bus
     address: 0x3C
     lambda: |-
       if (id(display_ligado)) {
-        it.printf(8, 0, id(font1), "%2.0f°C", id(ar_condicionado).target_temperature);
-        it.print(0, 24, id(font2), "-");
-        it.print(40, 24, id(font2), "+");
-        it.print(80, 24, id(font2), "V");
-        it.print(120, 24, id(font2), "M");
+        it.printf(4, 0, id(font1), "%2.0f°C", id(ar_condicionado).target_temperature);
+        it.print(0, 20, id(font2), "-");
+        it.print(38, 20, id(font2), "+");
+        it.print(76, 20, id(font2), "V");
+        it.print(114, 20, id(font2), "M");
         if (id(ar_condicionado).fan_mode == CLIMATE_FAN_LOW) {
           it.print(72, 0, id(font_icon), "\U0000ebdf");
         } else {
